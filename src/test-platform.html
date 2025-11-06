@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Система тестирования | Основы финансовых вычислений</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-start: #667eea;
+            --primary-end: #764ba2;
+            --accent: #5e72e4;
+            --success: #2dce89;
+            --danger: #f5365c;
+            --warning: #fb6340;
+            --light: #f4f5f7;
+            --dark: #32325d;
+            --text-muted: #8898aa;
+            --border: #dee2e6;
+            --bg: #f0f2f5;
+            --shadow-sm: 0 4px 6px rgba(50, 50, 93, .11), 0 1px 3px rgba(0, 0, 0, .08);
+            --shadow-lg: 0 15px 35px rgba(50, 50, 93, .1), 0 5px 15px rgba(0, 0, 0, .07);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            background: white;
+            min-height: calc(100vh - 4rem);
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+
+        /* Шапка */
+        .header {
+            background: linear-gradient(135deg, var(--primary-start) 0%, var(--primary-end) 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            letter-spacing: -0.5px;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .mode-btn {
+            padding: 0.5rem 1rem;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .mode-btn:hover {
+            background: rgba(255,255,255,0.25);
+        }
+
+        .mode-btn.active {
+            background: white;
+            color: var(--primary-end);
+            border-color: white;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            background: rgba(255,255,255,0.2);
+            height: 6px;
+            border-radius: 3px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: var(--success);
+            height: 100%;
+            transition: width 0.4s ease-in-out;
+            width: 0%;
+            border-radius: 3px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 600;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Контент */
+        .content {
+            padding: 2rem;
+        }
+
+        .question-filter {
+            background: var(--light);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-label {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--dark);
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+        
+        .question-count-selector select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.2s;
+            font-family: inherit;
+        }
+        
+        .question-count-selector select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        /* Вопросы */
+        .question-container { animation: fadeIn 0.4s ease-out; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .topic-badge {
+            display: inline-block;
+            background: var(--accent);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            margin-bottom: 1rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .question-number {
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .question-text {
+            font-size: 1.25rem;
+            color: var(--dark);
+            margin-bottom: 2rem;
+            line-height: 1.7;
+            font-weight: 600;
+        }
+
+        .answers { margin: 1.5rem 0; }
+
+        .answer-option {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+        }
+
+        .answer-option:hover:not(.disabled) {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-sm);
+            border-color: var(--accent);
+        }
+
+        .answer-option.selected {
+            background: #e9ecef;
+            border-color: var(--accent);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .answer-option.correct {
+            background: #eafaf3;
+            border-color: var(--success);
+        }
+
+        .answer-option.incorrect {
+            background: #fdecea;
+            border-color: var(--danger);
+        }
+
+        .answer-option.disabled {
+            pointer-events: none;
+            cursor: default;
+        }
+
+        .answer-option .answer-feedback-icon {
+            display: none;
+            position: absolute;
+            right: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        .answer-option.correct .answer-feedback-icon.correct { display: block; color: var(--success); }
+        .answer-option.incorrect .answer-feedback-icon.incorrect { display: block; color: var(--danger); }
+
+        .answer-indicator {
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            background: white;
+        }
+        .answer-indicator.radio { border-radius: 50%; }
+
+        .answer-option.selected .answer-indicator { border-color: var(--accent); background: var(--accent); }
+        .answer-option.correct .answer-indicator { border-color: var(--success); background: var(--success); }
+        .answer-option.incorrect .answer-indicator { border-color: var(--danger); background: var(--danger); }
+
+        .answer-indicator::after {
+            content: '✓'; color: white; font-size: 14px; line-height: 1; display: none;
+        }
+        .answer-indicator.radio::after {
+            content: ''; width: 8px; height: 8px; background: white; border-radius: 50%;
+        }
+        .answer-option.selected .answer-indicator::after,
+        .answer-option.correct .answer-indicator::after { display: block; }
+
+        /* Объяснение */
+        .explanation {
+            background: #fffbe6;
+            border-left: 4px solid var(--warning);
+            padding: 1rem 1.5rem;
+            margin: 2rem 0;
+            border-radius: 8px;
+            display: none;
+        }
+        .explanation.show { display: block; animation: slideIn 0.3s ease-out; }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .explanation-title {
+            font-weight: 600;
+            color: #d48806;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem; font-size: 1rem;
+        }
+        
+        .explanation-text {
+            color: #5c5c5c; font-size: 0.95rem; line-height: 1.7;
+        }
+
+        /* Кнопки */
+        .buttons { display: flex; gap: 1rem; margin-top: 2rem; }
+        .btn {
+            flex: 1;
+            padding: 0.875rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: var(--shadow-sm);
+        }
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 14px rgba(50, 50, 93, .1), 0 3px 6px rgba(0, 0, 0, .08);
+        }
+        .btn-check { background: var(--accent); color: white; }
+        .btn-next { background: var(--success); color: white; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn:active { transform: translateY(0); }
+
+        /* Результаты */
+        .results {
+            text-align: center;
+            padding: 2rem 1.5rem;
+            animation: fadeIn 0.5s ease-out;
+        }
+        .results h2 {
+            color: var(--dark);
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        .result-summary {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        .score-circle { position: relative; width: 180px; height: 180px; }
+        .score-circle svg {
+            width: 100%; height: 100%;
+            transform: rotate(-90deg);
+        }
+        .score-circle .circle-bg {
+            fill: none; stroke: var(--light); stroke-width: 12;
+        }
+        .score-circle .circle-progress {
+            fill: none;
+            stroke: var(--accent);
+            stroke-width: 12;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s ease-out;
+        }
+        .score-text {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        .result-percentage {
+            font-size: 2.5rem; font-weight: 700; color: var(--dark);
+        }
+        .result-score {
+            font-size: 1rem; font-weight: 500; color: var(--text-muted);
+        }
+        .result-details {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .result-grade {
+            font-size: 1.25rem; color: var(--dark); font-weight: 600;
+        }
+        .result-message {
+            color: var(--text-muted); line-height: 1.6; max-width: 500px; margin: 0 auto;
+        }
+
+        .btn-restart {
+            background: var(--accent);
+            color: white;
+            padding: 1rem 2.5rem;
+            margin-top: 2rem;
+            font-size: 1rem;
+        }
+
+        /* Мобильная адаптация */
+        @media (max-width: 640px) {
+            .container {
+                margin: 0;
+                border-radius: 0;
+                min-height: 100vh;
+                box-shadow: none;
+            }
+            .header, .content { padding: 1rem 1.5rem; }
+            .header h1 { font-size: 1.25rem; }
+            .stat-value { font-size: 1.2rem; }
+            .question-text { font-size: 1.1rem; }
+            .buttons { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Основы финансовых вычислений</h1>
+            <div class="mode-selector">
+                <button class="mode-btn active" data-mode="training" onclick="setMode(this, 'training')">Режим обучения</button>
+                <button class="mode-btn" data-mode="exam" onclick="setMode(this, 'exam')">Режим экзамена</button>
+                <button class="mode-btn" data-mode="random" onclick="setMode(this, 'random')">Случайные вопросы</button>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-value" id="currentQuestion">0</span>
+                    <span class="stat-label">Текущий</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="totalQuestions">0</span>
+                    <span class="stat-label">Всего</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="correctAnswers">0</span>
+                    <span class="stat-label">Верно</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="content" id="content">
+            <div class="question-filter">
+                <div class="filter-label">Настройки тестирования</div>
+                <div class="question-count-selector">
+                    <label for="questionCount">Выберите количество вопросов:</label>
+                    <select id="questionCount" onchange="updateQuestionCount()">
+                        <option value="10">10 вопросов</option>
+                        <option value="20">20 вопросов</option>
+                        <option value="30">30 вопросов</option>
+                        <option value="50">50 вопросов</option>
+                        <option value="all">Все вопросы</option>
+                    </select>
+                </div>
+            </div>
+            <div class="buttons">
+                <button class="btn btn-check" onclick="startTest()">Начать тестирование</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ВАЖНО: Этот скрипт подключает вашу базу данных с вопросами -->
+    <script src="questions-database.js"></script>
+    
+    <!-- Основной скрипт логики теста -->
+    <script>
+        // Глобальные переменные
+        let currentQuestionIndex = 0;
+        let correctAnswersCount = 0;
+        let preparedQuestions = [];
+        let userAnswers = [];
+        let testMode = 'training';
+        let selectedQuestionCount = 10;
+        let testStarted = false;
+
+        // Установка режима
+        function setMode(button, mode) {
+            testMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            button.classList.add('active');
+        }
+
+        // Обновление количества вопросов
+        function updateQuestionCount() {
+            const select = document.getElementById('questionCount');
+            const totalAvailable = typeof questions !== 'undefined' ? questions.length : 100;
+            if (select.value === 'all') {
+                selectedQuestionCount = totalAvailable;
+            } else {
+                 selectedQuestionCount = Math.min(parseInt(select.value), totalAvailable);
+            }
+        }
+
+        // Функция для перемешивания массива
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        // Функция для подготовки вопросов
+        function prepareQuestions() {
+            if (typeof questions === 'undefined' || !questions || questions.length === 0) {
+                // Ошибка уже обрабатывается в DOMContentLoaded, здесь просто выходим
+                return [];
+            }
+            updateQuestionCount(); 
+            let selectedQuestions = [...questions];
+            
+            if (testMode === 'random' || testMode === 'exam') {
+                selectedQuestions = shuffleArray(selectedQuestions);
+            }
+            
+            if (selectedQuestionCount < selectedQuestions.length) {
+                selectedQuestions = selectedQuestions.slice(0, selectedQuestionCount);
+            }
+            
+            return selectedQuestions.map(q => {
+                if (!q.options || !q.correct || !q.question) {
+                    console.error('Некорректный формат вопроса:', q);
+                    return null;
+                }
+
+                if (q.shuffle !== false && testMode !== 'training') {
+                    const indices = q.options.map((_, index) => index);
+                    const shuffledIndices = shuffleArray(indices);
+                    const newOptions = shuffledIndices.map(i => q.options[i]);
+                    const newCorrect = q.correct.map(correctIndex => 
+                        shuffledIndices.indexOf(correctIndex)
+                    );
+                    return { ...q, options: newOptions, correct: newCorrect };
+                }
+                
+                return {...q};
+            }).filter(q => q !== null);
+        }
+
+        // Начало теста
+        function startTest() {
+            preparedQuestions = prepareQuestions();
+            
+            if (preparedQuestions.length === 0) {
+                alert('Не удалось загрузить вопросы. Проверьте, что база вопросов не пуста и правильно подключена.');
+                return;
+            }
+            
+            testStarted = true;
+            currentQuestionIndex = 0;
+            correctAnswersCount = 0;
+            userAnswers = [];
+            
+            document.getElementById('totalQuestions').textContent = preparedQuestions.length;
+            document.getElementById('correctAnswers').textContent = '0';
+            
+            showQuestion();
+        }
+
+        // Отображение вопроса
+        function showQuestion() {
+            if (currentQuestionIndex >= preparedQuestions.length) {
+                showResults();
+                return;
+            }
+            
+            const question = preparedQuestions[currentQuestionIndex];
+            const content = document.getElementById('content');
+            const isMultiple = question.type === 'multiple' || (question.correct && question.correct.length > 1);
+            
+            document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
+            updateProgressBar();
+            
+            let answersHTML = '';
+            const indicatorType = isMultiple ? '' : 'radio';
+            
+            question.options.forEach((option, index) => {
+                answersHTML += `
+                    <div class="answer-option" data-index="${index}" onclick="selectAnswer(${index})">
+                        <div class="answer-indicator ${indicatorType}"></div>
+                        <div class="answer-text">${option}</div>
+                        <span class="answer-feedback-icon correct">✔</span>
+                        <span class="answer-feedback-icon incorrect">✖</span>
+                    </div>
+                `;
+            });
+            
+            const topicBadge = question.topic ? `<div class="topic-badge">${question.topic}</div>` : '';
+            
+            content.innerHTML = `
+                <div class="question-container">
+                    ${topicBadge}
+                    <div class="question-number">
+                        Вопрос ${currentQuestionIndex + 1} из ${preparedQuestions.length}
+                        ${isMultiple ? ' (выберите несколько ответов)' : ''}
+                    </div>
+                    <div class="question-text">${question.question}</div>
+                    <div class="answers">
+                        ${answersHTML}
+                    </div>
+                    <div class="explanation" id="explanation">
+                        <div class="explanation-title">
+                            <span>💡</span>
+                            <span>Объяснение</span>
+                        </div>
+                        <div class="explanation-text">${question.explanation || 'Объяснение отсутствует'}</div>
+                    </div>
+                    <div class="buttons">
+                        <button class="btn btn-check" id="checkBtn" onclick="checkAnswer()">Проверить</button>
+                        <button class="btn btn-next" id="nextBtn" onclick="nextQuestion()" style="display: none;">
+                            ${currentQuestionIndex < preparedQuestions.length - 1 ? 'Дальше' : 'Завершить'}
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Выбор ответа
+        function selectAnswer(index) {
+            const element = document.querySelector(`.answer-option[data-index="${index}"]`);
+            if (element.classList.contains('disabled')) return;
+            
+            const question = preparedQuestions[currentQuestionIndex];
+            const isMultiple = question.type === 'multiple' || (question.correct && question.correct.length > 1);
+            
+            if (!isMultiple) {
+                document.querySelectorAll('.answer-option').forEach(opt => opt.classList.remove('selected'));
+                element.classList.add('selected');
+            } else {
+                element.classList.toggle('selected');
+            }
+        }
+
+        // Проверка ответа
+        function checkAnswer() {
+            const selectedAnswers = [];
+            document.querySelectorAll('.answer-option.selected').forEach(el => {
+                selectedAnswers.push(parseInt(el.dataset.index));
+            });
+            
+            if (selectedAnswers.length === 0) {
+                alert('Пожалуйста, выберите хотя бы один ответ');
+                return;
+            }
+            
+            const question = preparedQuestions[currentQuestionIndex];
+            selectedAnswers.sort((a, b) => a - b);
+            const correctAnswers = [...question.correct].sort((a, b) => a - b);
+            
+            const isCorrect = arraysEqual(selectedAnswers, correctAnswers);
+            
+            document.querySelectorAll('.answer-option').forEach((option, index) => {
+                option.classList.add('disabled');
+                if (question.correct.includes(index)) {
+                    option.classList.add('correct');
+                } else if (selectedAnswers.includes(index)) {
+                    option.classList.add('incorrect');
+                }
+            });
+            
+            if (isCorrect) {
+                correctAnswersCount++;
+                document.getElementById('correctAnswers').textContent = correctAnswersCount;
+            } else {
+                if (testMode !== 'exam' && question.explanation) {
+                    document.getElementById('explanation').classList.add('show');
+                }
+            }
+            
+            document.getElementById('checkBtn').style.display = 'none';
+            document.getElementById('nextBtn').style.display = 'block';
+        }
+
+        // Следующий вопрос
+        function nextQuestion() {
+            currentQuestionIndex++;
+            showQuestion();
+        }
+
+        // Показ результатов
+        function showResults() {
+            const percentage = preparedQuestions.length > 0 ? Math.round((correctAnswersCount / preparedQuestions.length) * 100) : 0;
+            let message = '';
+            let grade = '';
+            
+            if (percentage >= 90) { grade = 'Отлично'; message = 'Вы прекрасно знаете материал.'; }
+            else if (percentage >= 75) { grade = 'Хорошо'; message = 'Хороший результат! Есть небольшие пробелы в знаниях.'; }
+            else if (percentage >= 60) { grade = 'Удовлетворительно'; message = 'Стоит повторить материал для закрепления.'; }
+            else { grade = 'Неудовлетворительно'; message = 'Необходимо более тщательно изучить материал.'; }
+            
+            document.getElementById('content').innerHTML = `
+                <div class="results">
+                    <h2>Тестирование завершено!</h2>
+                    <div class="result-summary">
+                        <div class="score-circle" id="scoreCircle">
+                            <svg viewBox="0 0 100 100">
+                                <circle class="circle-bg" cx="50" cy="50" r="44"></circle>
+                                <circle class="circle-progress" id="circleProgress" cx="50" cy="50" r="44"></circle>
+                            </svg>
+                            <div class="score-text">
+                                <div class="result-percentage">${percentage}%</div>
+                                <div class="result-score">${correctAnswersCount} из ${preparedQuestions.length}</div>
+                            </div>
+                        </div>
+                        <div class="result-details">
+                             <div class="result-grade">${grade}</div>
+                             <div class="result-message">${message}</div>
+                        </div>
+                    </div>
+                    <div class="buttons">
+                        <button class="btn btn-restart" onclick="location.reload()">Пройти заново</button>
+                    </div>
+                </div>
+            `;
+            
+            updateProgressBar(100);
+            animateScoreCircle(percentage);
+        }
+
+        // Анимация кругового прогресс-бара
+        function animateScoreCircle(percentage) {
+            const circle = document.getElementById('circleProgress');
+            if (!circle) return;
+
+            const radius = circle.r.baseVal.value;
+            const circumference = 2 * Math.PI * radius;
+            const offset = circumference - (percentage / 100) * circumference;
+
+            circle.style.strokeDasharray = `${circumference} ${circumference}`;
+            setTimeout(() => {
+                circle.style.strokeDashoffset = offset;
+            }, 100);
+        }
+
+        // Обновление прогресс-бара
+        function updateProgressBar(value) {
+            const progress = value !== undefined ? value : 
+                ((currentQuestionIndex / preparedQuestions.length) * 100);
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        // Вспомогательная функция для сравнения массивов
+        function arraysEqual(a, b) {
+            if (a.length !== b.length) return false;
+            for (let i = 0; i < a.length; i++) {
+                if (a[i] !== b[i]) return false;
+            }
+            return true;
+        }
+        
+        // Инициализация и проверка наличия базы вопросов
+        window.addEventListener('DOMContentLoaded', () => {
+             updateQuestionCount();
+             // Небольшая задержка, чтобы скрипт questions-database.js успел загрузиться
+             setTimeout(() => {
+                if (typeof questions === 'undefined' || questions.length === 0) {
+                    // Делаем сообщение об ошибке более заметным
+                    const contentDiv = document.getElementById('content');
+                    contentDiv.innerHTML = `
+                        <div class="explanation show" style="background: #fdecea; border-color: var(--danger); margin-top: 2rem;">
+                            <div class="explanation-title" style="color: var(--danger);">⚠️ Ошибка загрузки данных</div>
+                            <div class="explanation-text" style="color: var(--dark);">
+                                База вопросов не найдена или пуста.
+                                <br>
+                                Убедитесь, что файл <strong>questions-database.js</strong> находится в той же папке, что и HTML-файл, и содержит массив с вопросами.
+                            </div>
+                        </div>
+                    `;
+                    // Скрываем ненужные элементы
+                    document.querySelector('.header').style.display = 'none';
+                }
+            }, 100);
+        });
+    </script>
+</body>
+</html>
